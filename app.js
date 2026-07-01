@@ -20,29 +20,53 @@ document.getElementById('csvFileInput').addEventListener('change', function(e) {
 });
 
 function parseAndSaveData(text) {
-  const lines = text.split('\n');
+  // Aggressively strip carriage returns and split by line
+  const lines = text.replace(/\r/g, '').split('\n');
   if (lines.length < 3) return alert("Invalid CSV format. Are you sure this is the Master Route?");
   
-  // Extract headers from the 1st row (index 0)
-  const headers = lines[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
+  // Clean headers: remove BOM (\uFEFF), quotes, and whitespace
+  const rawHeaders = lines[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => 
+    h.replace(/^\uFEFF/, '').replace(/^"|"$/g, '').trim()
+  );
+  
   const parsedData = [];
   
   // Data starts at line 3 (index 2)
   for (let i = 2; i < lines.length; i++) {
-    if (!lines[i].trim()) continue;
-    const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell ? cell.trim().replace(/^"|"$/g, '') : '');
-    const obj = {};
-    headers.forEach((h, index) => { obj[h] = row[index] || ''; });
+    const rawLine = lines[i].trim();
+    if (!rawLine) continue;
     
-    // Clean the Store Number explicitly when saving
+    const row = rawLine.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => 
+      cell ? cell.replace(/^"|"$/g, '').trim() : ''
+    );
+    
+    const obj = {};
+    rawHeaders.forEach((h, index) => { 
+      // Force map our critical keys so we ignore minor header typos/spaces
+      let cleanKey = h;
+      const lowerH = h.toLowerCase();
+      if (lowerH.includes('store number')) cleanKey = 'Store Number';
+      if (lowerH.includes('city')) cleanKey = 'City';
+      if (lowerH.includes('route')) cleanKey = 'Route';
+      
+      obj[cleanKey] = row[index] || ''; 
+    });
+    
+    // Explicitly clean the Store Number value
     if (obj['Store Number']) {
-      obj['Store Number'] = obj['Store Number'].toString().trim();
+      // Remove any ".0" Excel artifacts and make it a strict string
+      obj['Store Number'] = obj['Store Number'].toString().replace(/\.0$/, '').trim();
       parsedData.push(obj);
     }
   }
   
   siteData = parsedData;
   localStorage.setItem('siteData', JSON.stringify(siteData));
+  
+  // LOG TO CONSOLE FOR DEBUGGING
+  console.log("✅ CSV Parsed Successfully!");
+  console.log(`Loaded ${siteData.length} stores.`);
+  console.log("First 3 records to verify structure:", siteData.slice(0, 3));
   
   document.getElementById('uploadSection').style.display = 'none';
   document.getElementById('searchSection').style.display = 'block';
@@ -53,6 +77,7 @@ function loadData() {
   const saved = localStorage.getItem('siteData');
   if (saved) {
     siteData = JSON.parse(saved);
+    console.log("✅ Loaded data from Local Storage. Total records:", siteData.length);
     document.getElementById('uploadSection').style.display = 'none';
     document.getElementById('searchSection').style.display = 'block';
     renderList(siteData);
@@ -66,34 +91,35 @@ function clearData() {
   document.getElementById('searchSection').style.display = 'none';
   document.getElementById('resultsContainer').innerHTML = '';
   document.getElementById('csvFileInput').value = '';
+  console.log("🗑️ Data cleared.");
 }
 
-// BULLETPROOF SEARCH LOGIC
+// STRICT SEARCH LOGIC
 document.getElementById('searchInput').addEventListener('input', function(e) {
-  const rawTerm = e.target.value;
-  const term = rawTerm.toLowerCase().trim();
+  const term = e.target.value.toLowerCase().trim();
   
   if (!term) {
     renderList(siteData);
     return;
   }
 
-  // 1. Check for an exact Store Number match (ignoring any hidden spaces)
+  // 1. ABSOLUTE EXACT MATCH
   const exactStoreMatch = siteData.filter(site => {
     return site['Store Number'] && site['Store Number'].toLowerCase() === term;
   });
 
-  // If an exact store is found, ONLY show that store and stop searching.
+  // If exact match found, isolate it and stop searching
   if (exactStoreMatch.length > 0) {
+    console.log(`🎯 Exact match found for Store: ${term}`, exactStoreMatch);
     renderList(exactStoreMatch);
     return; 
   }
 
-  // 2. Allow explicit Route searching (e.g., typing "route 4" or "r 4")
+  // 2. EXPLICIT ROUTE SEARCH (e.g., "route 4" or "r 4")
   if (term.startsWith('route ') || term.startsWith('r ')) {
     const routeNum = term.replace('route ', '').replace('r ', '').trim();
     const routeMatches = siteData.filter(site => {
-        return site['Route'] && site['Route'].toLowerCase() === routeNum;
+        return site['Route'] && site['Route'].toString().toLowerCase() === routeNum;
     });
     
     if (routeMatches.length > 0) {
@@ -102,7 +128,7 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
     }
   }
 
-  // 3. Fallback partial matching (for City names or if no exact match exists)
+  // 3. FALLBACK PARTIAL MATCH
   const matches = siteData.filter(site => {
     const sNum = site['Store Number'] ? site['Store Number'].toLowerCase() : '';
     const sCity = site['City'] ? site['City'].toLowerCase() : '';
@@ -118,7 +144,7 @@ function renderList(data) {
   const container = document.getElementById('resultsContainer');
   container.innerHTML = '';
   
-  const limit = Math.min(data.length, 50); // Cap display for performance
+  const limit = Math.min(data.length, 50); 
   
   for (let i = 0; i < limit; i++) {
     const site = data[i];
