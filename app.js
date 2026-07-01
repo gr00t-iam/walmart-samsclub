@@ -73,18 +73,34 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
     return;
   }
 
-  // 1. Prioritize Exact Matches for Store Number
-  const exactMatches = siteData.filter(site => site['Store Number'] === term);
+  // 1. Check for an exact Store Number match
+  const exactStoreMatch = siteData.filter(site => site['Store Number'].toLowerCase() === term);
 
-  // 2. Find Partial Matches (excluding the exact match)
-  const partialMatches = siteData.filter(site => {
-    if (site['Store Number'] === term) return false; // Skip if already caught above
-    
+  // If an exact store is found, ONLY show that store and ignore everything else.
+  if (exactStoreMatch.length > 0) {
+    renderList(exactStoreMatch);
+    return; 
+  }
+
+  // 2. Allow explicit Route searching (e.g., typing "route 4" or "r 4")
+  if (term.startsWith('route ') || term.startsWith('r ')) {
+    const routeNum = term.replace('route ', '').replace('r ', '').trim();
+    const routeMatches = siteData.filter(site => site['Route'].toLowerCase() === routeNum);
+    if (routeMatches.length > 0) {
+      renderList(routeMatches);
+      return;
+    }
+  }
+
+  // 3. Fallback partial matching (for City names or partial store numbers if no exact match exists yet)
+  const matches = siteData.filter(site => {
     return (site['Store Number'] && site['Store Number'].toLowerCase().includes(term)) ||
            (site['City'] && site['City'].toLowerCase().includes(term)) ||
            (site['Route'] && site['Route'].toLowerCase() === term);
   });
 
+  renderList(matches);
+});
   // Combine them: Exact matches pinned to the top
   const filtered = [...exactMatches, ...partialMatches];
   renderList(filtered);
