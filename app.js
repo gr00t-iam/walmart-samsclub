@@ -34,7 +34,11 @@ function parseAndSaveData(text) {
     const obj = {};
     headers.forEach((h, index) => { obj[h] = row[index] || ''; });
     
-    if (obj['Store Number']) parsedData.push(obj);
+    // Clean the Store Number explicitly when saving
+    if (obj['Store Number']) {
+      obj['Store Number'] = obj['Store Number'].toString().trim();
+      parsedData.push(obj);
+    }
   }
   
   siteData = parsedData;
@@ -64,19 +68,22 @@ function clearData() {
   document.getElementById('csvFileInput').value = '';
 }
 
-// UPDATED SEARCH LOGIC
+// BULLETPROOF SEARCH LOGIC
 document.getElementById('searchInput').addEventListener('input', function(e) {
-  const term = e.target.value.toLowerCase().trim();
+  const rawTerm = e.target.value;
+  const term = rawTerm.toLowerCase().trim();
   
   if (!term) {
     renderList(siteData);
     return;
   }
 
-  // 1. Check for an exact Store Number match
-  const exactStoreMatch = siteData.filter(site => site['Store Number'].toLowerCase() === term);
+  // 1. Check for an exact Store Number match (ignoring any hidden spaces)
+  const exactStoreMatch = siteData.filter(site => {
+    return site['Store Number'] && site['Store Number'].toLowerCase() === term;
+  });
 
-  // If an exact store is found, ONLY show that store and ignore everything else.
+  // If an exact store is found, ONLY show that store and stop searching.
   if (exactStoreMatch.length > 0) {
     renderList(exactStoreMatch);
     return; 
@@ -85,25 +92,26 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
   // 2. Allow explicit Route searching (e.g., typing "route 4" or "r 4")
   if (term.startsWith('route ') || term.startsWith('r ')) {
     const routeNum = term.replace('route ', '').replace('r ', '').trim();
-    const routeMatches = siteData.filter(site => site['Route'].toLowerCase() === routeNum);
+    const routeMatches = siteData.filter(site => {
+        return site['Route'] && site['Route'].toLowerCase() === routeNum;
+    });
+    
     if (routeMatches.length > 0) {
       renderList(routeMatches);
       return;
     }
   }
 
-  // 3. Fallback partial matching (for City names or partial store numbers if no exact match exists yet)
+  // 3. Fallback partial matching (for City names or if no exact match exists)
   const matches = siteData.filter(site => {
-    return (site['Store Number'] && site['Store Number'].toLowerCase().includes(term)) ||
-           (site['City'] && site['City'].toLowerCase().includes(term)) ||
-           (site['Route'] && site['Route'].toLowerCase() === term);
+    const sNum = site['Store Number'] ? site['Store Number'].toLowerCase() : '';
+    const sCity = site['City'] ? site['City'].toLowerCase() : '';
+    const sRoute = site['Route'] ? site['Route'].toLowerCase() : '';
+    
+    return sNum.includes(term) || sCity.includes(term) || sRoute === term;
   });
 
   renderList(matches);
-});
-  // Combine them: Exact matches pinned to the top
-  const filtered = [...exactMatches, ...partialMatches];
-  renderList(filtered);
 });
 
 function renderList(data) {
