@@ -64,13 +64,29 @@ function clearData() {
   document.getElementById('csvFileInput').value = '';
 }
 
+// UPDATED SEARCH LOGIC
 document.getElementById('searchInput').addEventListener('input', function(e) {
-  const term = e.target.value.toLowerCase();
-  const filtered = siteData.filter(site => {
+  const term = e.target.value.toLowerCase().trim();
+  
+  if (!term) {
+    renderList(siteData);
+    return;
+  }
+
+  // 1. Prioritize Exact Matches for Store Number
+  const exactMatches = siteData.filter(site => site['Store Number'] === term);
+
+  // 2. Find Partial Matches (excluding the exact match)
+  const partialMatches = siteData.filter(site => {
+    if (site['Store Number'] === term) return false; // Skip if already caught above
+    
     return (site['Store Number'] && site['Store Number'].toLowerCase().includes(term)) ||
            (site['City'] && site['City'].toLowerCase().includes(term)) ||
            (site['Route'] && site['Route'].toLowerCase() === term);
   });
+
+  // Combine them: Exact matches pinned to the top
+  const filtered = [...exactMatches, ...partialMatches];
   renderList(filtered);
 });
 
