@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Route Schedule Lookup</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0071ce">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Site Info Lookup</h1>
+    <p>Refresh Route Schedule</p>
+  </header>
+
+  <div class="container">
+    <div id="uploadSection">
+      <h2>Welcome!</h2>
+      <p>Please upload your <strong>Master Route.csv</strong> file to get started. The data will be saved to your device for offline use.</p>
+      <input type="file" id="csvFileInput" accept=".csv">
+    </div>
+
+    <div id="searchSection" style="display: none;">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search by Store #, City, or Route...">
+        <button id="clearBtn" onclick="clearData()">Reset Data</button>
+      </div>
+      <div id="resultsContainer"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

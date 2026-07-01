@@ -1,0 +1,105 @@
+* {
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+body {
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+header {
+    background-color: #0071ce;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+header h1 { margin: 0 0 0.2rem 0; font-size: 1.5rem;}
+header p { margin: 0; font-size: 0.9rem; opacity: 0.9;}
+.container {
+    padding: 1rem;
+    max-width: 600px;
+    margin: auto;
+}
+#uploadSection {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 2rem;
+}
+input[type="file"] { margin-top: 1rem; }
+.search-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+#searchInput {
+    flex: 1;
+    padding: 0.8rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+#clearBtn {
+    background: #d32f2f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0 1rem;
+    cursor: pointer;
+    font-weight: bold;
+}
+#clearBtn:hover { background: #b71c1c; }
+.card {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.card h3 {
+    margin: 0 0 0.5rem 0;
+    color: #0071ce;
+}
+.route-badge {
+    display: inline-block;
+    background: #e1f5fe;
+    color: #0277bd;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    margin-bottom: 0.8rem;
+}
+.hw-grid {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.8rem;
+}
+.hw-box {
+    background: #f0f0f0;
+    padding: 0.5rem;
+    border-radius: 4px;
+    flex: 1;
+    text-align: center;
+}
+details {
+    margin-top: 1rem;
+    background: #f9f9f9;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #eee;
+}
+details summary {
+    cursor: pointer;
+    font-weight: bold;
+    color: #555;
+}
+details ul {
+    margin: 0.5rem 0 0 0;
+    padding-left: 1.5rem;
+    columns: 2;
+}
