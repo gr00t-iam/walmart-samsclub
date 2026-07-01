@@ -63,10 +63,7 @@ function parseAndSaveData(text) {
   siteData = parsedData;
   localStorage.setItem('siteData', JSON.stringify(siteData));
   
-  // LOG TO CONSOLE FOR DEBUGGING
   console.log("✅ CSV Parsed Successfully!");
-  console.log(`Loaded ${siteData.length} stores.`);
-  console.log("First 3 records to verify structure:", siteData.slice(0, 3));
   
   document.getElementById('uploadSection').style.display = 'none';
   document.getElementById('searchSection').style.display = 'block';
@@ -77,7 +74,6 @@ function loadData() {
   const saved = localStorage.getItem('siteData');
   if (saved) {
     siteData = JSON.parse(saved);
-    console.log("✅ Loaded data from Local Storage. Total records:", siteData.length);
     document.getElementById('uploadSection').style.display = 'none';
     document.getElementById('searchSection').style.display = 'block';
     renderList(siteData);
@@ -91,7 +87,6 @@ function clearData() {
   document.getElementById('searchSection').style.display = 'none';
   document.getElementById('resultsContainer').innerHTML = '';
   document.getElementById('csvFileInput').value = '';
-  console.log("🗑️ Data cleared.");
 }
 
 // STRICT SEARCH LOGIC
@@ -110,7 +105,6 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
 
   // If exact match found, isolate it and stop searching
   if (exactStoreMatch.length > 0) {
-    console.log(`🎯 Exact match found for Store: ${term}`, exactStoreMatch);
     renderList(exactStoreMatch);
     return; 
   }
@@ -162,18 +156,18 @@ function renderList(data) {
         <div class="hw-box"><strong>Total TCs:</strong><br>${site['Total Thin Clients'] || 0}</div>
       </div>
       
-      <details>
-        <summary>View Printer Details</summary>
-        <ul>
-            <li>MS826: ${site['MS826'] || 0}</li>
-            <li>MS632: ${site['MS632'] || 0}</li>
-            <li>MX722: ${site['MX722'] || 0}</li>
-            <li>MX632: ${site['MX632'] || 0}</li>
-            <li>CX632: ${site['CX632'] || 0}</li>
-            <li>CX735: ${site['CX735'] || 0}</li>
-            <li>CS531: ${site['CS531'] || 0}</li>
+      <div style="margin-top: 1rem; padding: 0.8rem; background: #f9f9f9; border-radius: 4px; border: 1px solid #eee;">
+        <strong style="color: #555; display: block; margin-bottom: 0.4rem;">Printer Details:</strong>
+        <ul style="margin: 0; padding-left: 1.2rem; columns: 2; font-size: 0.9em; line-height: 1.6;">
+            <li>MS826: <strong>${site['MS826'] || 0}</strong></li>
+            <li>MS632: <strong>${site['MS632'] || 0}</strong></li>
+            <li>MX722: <strong>${site['MX722'] || 0}</strong></li>
+            <li>MX632: <strong>${site['MX632'] || 0}</strong></li>
+            <li>CX632: <strong>${site['CX632'] || 0}</strong></li>
+            <li>CX735: <strong>${site['CX735'] || 0}</strong></li>
+            <li>CS531: <strong>${site['CS531'] || 0}</strong></li>
         </ul>
-      </details>
+      </div>
     `;
     container.appendChild(card);
   }
